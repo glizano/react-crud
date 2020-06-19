@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import PersonaService from '../services/PersonaService';
+import { Link } from "react-router-dom"
 
 
 const AddPersona = (props) => {
 
     const [persona, setPersona] = useState({
-        id: null,
         identificacion: '',
         nombre: '',
         fecha: '',
     });
+    const [errors, setErrors] = useState([])
     const [submitted, setSubmitted] = useState(false);
 
     const handleInputChange = (event) => {
@@ -17,24 +18,44 @@ const AddPersona = (props) => {
         setPersona({ ...persona, [name]: value });
     }
 
+    const validate = () => {
+        let _errors = []
+        Object.entries(persona).forEach(
+            // if we have an error string set valid to false
+            ([key, value]) => {
+                !value && _errors.push(key + ' es un campo requerido')
+            }
+        );
+        return _errors;
+
+    }
+
     const savePersona = () => {
-        PersonaService.create(persona)
-            .then(response => {
-                setPersona(response.data);
-                setSubmitted(true);
-                console.log(response);
-            })
-            .catch(error => {
-                console.log(error);
-            });
+        let _errors = validate()
+        setErrors(_errors);
+        if (_errors.length === 0) {
+
+            PersonaService.create(persona)
+                .then(response => {
+                    newPersona()
+                    setSubmitted(true);
+                    console.log(response);
+                })
+                .catch(error => {
+                    let _errors = ['Ya existe la identificacion']
+                    setErrors(_errors);
+                    console.log(error);
+                });
+        }
     };
 
     const newPersona = () => {
         setPersona({
-            id: null,
             identificacion: '',
             nombre: '',
             fecha: '',
+            errors: []
+
         });
         setSubmitted(false);
     }
@@ -46,7 +67,10 @@ const AddPersona = (props) => {
                     <h4>Enviado correctamente!</h4>
                     <button className="btn btn-success" onClick={newPersona}>
                         Add
-        </button>
+                    </button>
+                    <Link to={"/"} className="btn btn-primary">
+                        Ir a la lista
+                    </Link>
                 </div>
             ) : (
                     <div>
@@ -55,7 +79,7 @@ const AddPersona = (props) => {
                         <div className="form-group">
                             <label htmlFor="identificacion">Identificacion</label>
                             <input
-                                type="text"
+                                type="number" max="999999999" 
                                 className="form-control"
                                 id="identificacion"
                                 required
@@ -69,7 +93,7 @@ const AddPersona = (props) => {
                         <div className="form-group">
                             <label htmlFor="nombre">Nombre</label>
                             <input
-                                type="text"
+                                type="text" maxLength="255"
                                 className="form-control"
                                 id="nombre"
                                 required
@@ -81,7 +105,7 @@ const AddPersona = (props) => {
                         <div className="form-group">
                             <label htmlFor="fecha">Fecha</label>
                             <input
-                                type="text"
+                                type="date"
                                 className="form-control"
                                 id="fecha"
                                 required
@@ -91,9 +115,18 @@ const AddPersona = (props) => {
                             />
                         </div>
 
-                        <button onClick={savePersona} className="btn btn-success">
+                        <button onClick={savePersona} className="btn btn-success" type='submit'>
                             Submit
-        </button>
+                        </button>
+
+
+                        {errors &&
+                            <ul className="text-danger">
+                                {errors.map((error, index) =>
+                                    <li key={index}>{error}</li>
+                                )}
+                            </ul>
+                        }
                     </div>
                 )}
         </div>

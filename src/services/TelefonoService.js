@@ -6,7 +6,7 @@ const get = (id) => http.get(`/telefonos/${id}`);
 
 const create = (data) => http.post('/telefonos',data);
 
-const update = (data) => http.put('/telefonoss',data);
+const update = (data) => http.put('/telefonos',data);
 
 const remove = (id) => http.delete(`/telefonos/${id}`);
 
